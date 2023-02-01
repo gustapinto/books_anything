@@ -27,8 +27,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	http.Handle("/ping", middleware.Logging(logger, new(controller.PingController)))
-	http.Handle("/user", middleware.Logging(logger, usersController))
+	http.Handle("/ping/", middleware.Logging(logger, new(controller.PingController)))
+	http.Handle("/user/", middleware.Logging(logger, usersController))
 
 	if err := http.ListenAndServe(config.AppAddr, nil); err != nil {
 		log.Fatal(err)
