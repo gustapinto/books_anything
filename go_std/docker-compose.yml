@@ -1,0 +1,30 @@
+version: "3"
+
+services:
+  golang:
+    image: golang:1.19.5-alpine
+    tty: true
+    ports:
+      - 3000:3000
+    volumes:
+      - ./:/books_rest_app:Z
+    env_file:
+      - .env
+    networks:
+      - backend
+
+  postgres:
+    image: postgres:15-alpine
+    restart: on-failure
+    ports:
+      - 5432:5432
+    volumes:
+      - ./db:/var/lib/postgresql/data:Z
+    env_file:
+      - .env
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
