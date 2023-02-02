@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"regexp"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 
@@ -14,23 +15,35 @@ import (
 )
 
 func main() {
+	logger := log.Default()
+
 	db, err := sql.Open(config.DBDriver, config.DBDsn)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
-	logger := log.Default()
 	usersRepository := repository.NewUsersRepository(db)
-	usersController := controller.NewUsersController(usersRepository)
 
 	if err := repository.AutoMigrate(db, usersRepository); err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
-	http.Handle("/ping/", middleware.Logging(logger, new(controller.PingController)))
-	http.Handle("/user/", middleware.Logging(logger, usersController))
+	RegisterRoutes(logger, map[string]http.Handler{
+		"/ping": controller.NewPingController(),
+		"/user": controller.NewUsersController(usersRepository),
+	})
+}
+
+func RegisterRoutes(logger *log.Logger, routeMapping map[string]http.Handler) {
+	for route, handler := range routeMapping {
+		http.Handle(route, middleware.Logging(logger, handler))
+
+		if matched, _ := regexp.Match(`\/[a-z|A-Z]*\/`, []byte(route)); !matched {
+			http.Handle(route+"/", middleware.Logging(logger, handler))
+		}
+	}
 
 	if err := http.ListenAndServe(config.AppAddr, nil); err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 }

@@ -1,10 +1,15 @@
 package controller
 
 import (
-	"encoding/json"
 	"net/http"
+	"regexp"
 
+	"github.com/gustapinto/books_rest/go_std/model"
 	"github.com/gustapinto/books_rest/go_std/repository"
+)
+
+const (
+	singleUserRoutePattern = `\/user\/([0-9]+)`
 )
 
 type UsersController struct {
@@ -17,37 +22,94 @@ func NewUsersController(usersRepository *repository.UsersRepository) *UsersContr
 	}
 }
 
-func (c *UsersController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (usersController *UsersController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		c.GetAll(w, r)
+		if matched, _ := regexp.MatchString(singleUserRoutePattern, r.URL.Path); matched {
+			usersController.Get(w, r)
+		} else {
+			usersController.GetAll(w, r)
+		}
 	case http.MethodPost:
-		c.Create(w, r)
+		usersController.Create(w, r)
+	case http.MethodPut:
+		usersController.Update(w, r)
+	case http.MethodDelete:
+		usersController.Delete(w, r)
 	default:
 		MethodNotAllowed(w, r)
 	}
 }
 
-func (c *UsersController) GetAll(w http.ResponseWriter, _ *http.Request) {
-	users, err := c.usersRepository.GetAll(true)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+func (usersController *UsersController) Get(w http.ResponseWriter, r *http.Request) {
+	// TODO
 
-	usersJson, err := json.Marshal(&users)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.Write(usersJson)
+	// userId, err := ExtractIdFromUrl(r.URL.Path)
+	// if err != nil {
+	// 	BadRequestResponse(w)
+	// 	return
+	// }
 }
 
-func (c *UsersController) Create(w http.ResponseWriter, r *http.Request) {
-	/**
-	TODO
+func (usersController *UsersController) GetAll(w http.ResponseWriter, r *http.Request) {
+	users, err := usersController.usersRepository.GetAll(true)
+	if err != nil {
+		ServerErrorResponse(w, err)
+		return
+	}
 
-	Add the user create method
-	*/
+	JsonResponse[[]model.User](w, users, http.StatusOK)
+}
+
+func (usersController *UsersController) Create(w http.ResponseWriter, r *http.Request) {
+	user, err := UnmarshalJsonRequest[model.User](w, r)
+	if err != nil {
+		BadRequestResponse(w)
+		return
+	}
+
+	newUser, err := usersController.usersRepository.Create(&user)
+	if err != nil {
+		ServerErrorResponse(w, err)
+		return
+	}
+
+	JsonResponse[model.User](w, newUser, http.StatusCreated)
+}
+
+func (usersController *UsersController) Update(w http.ResponseWriter, r *http.Request) {
+	user, err := UnmarshalJsonRequest[model.User](w, r)
+	if err != nil {
+		BadRequestResponse(w)
+		return
+	}
+
+	if user.Id == 0 {
+		userId, err := ExtractIdFromUrl(r.URL.Path)
+		if err != nil {
+			BadRequestResponse(w)
+			return
+		}
+
+		user.Id = userId
+	}
+
+	newUser, err := usersController.usersRepository.Update(&user)
+	if err != nil {
+		ServerErrorResponse(w, err)
+		return
+	}
+
+	JsonResponse[model.User](w, newUser, http.StatusOK)
+}
+
+func (usersController *UsersController) Delete(w http.ResponseWriter, r *http.Request) {
+	userId, err := ExtractIdFromUrl(r.URL.Path)
+	if err != nil {
+		BadRequestResponse(w)
+	}
+
+	if err := usersController.usersRepository.Delete(userId); err != nil {
+		ServerErrorResponse(w, err)
+	}
 }

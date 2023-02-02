@@ -7,15 +7,19 @@ import (
 
 type PingController struct{}
 
-func (c *PingController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func NewPingController() *PingController {
+	return &PingController{}
+}
+
+func (pingController *PingController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		c.Pong(w, r)
+		pingController.Pong(w, r)
 	default:
 		MethodNotAllowed(w, r)
 	}
 }
 
-func (c *PingController) Pong(w http.ResponseWriter, _ *http.Request) {
+func (_ *PingController) Pong(w http.ResponseWriter, _ *http.Request) {
 	io.WriteString(w, "Pong")
 }
