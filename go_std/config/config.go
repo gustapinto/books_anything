@@ -11,6 +11,7 @@ const (
 
 var (
 	AppAddr    = os.Getenv("APP_ADDR")
+	AppSecret  = os.Getenv("APP_SECRET")
 	DBHost     = os.Getenv("DB_HOST")
 	DBPort     = os.Getenv("DB_PORT")
 	DBUser     = os.Getenv("DB_USER")

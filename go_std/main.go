@@ -31,6 +31,7 @@ func main() {
 	RegisterRoutes(logger, map[string]http.Handler{
 		"/ping": controller.NewPingController(),
 		"/user": controller.NewUsersController(usersRepository),
+		"/auth": controller.NewAuthController(usersRepository),
 	})
 }
 

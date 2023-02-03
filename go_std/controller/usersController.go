@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/gustapinto/books_rest/go_std/middleware"
 	"github.com/gustapinto/books_rest/go_std/model"
 	"github.com/gustapinto/books_rest/go_std/repository"
 )
@@ -26,16 +27,16 @@ func (usersController *UsersController) ServeHTTP(w http.ResponseWriter, r *http
 	switch r.Method {
 	case http.MethodGet:
 		if matched, _ := regexp.MatchString(GetUserPattern, r.URL.Path); matched {
-			usersController.Get(w, r)
+			middleware.AuthFunc(w, r, usersController.Get)
 		} else {
-			usersController.GetAll(w, r)
+			middleware.AuthFunc(w, r, usersController.GetAll)
 		}
 	case http.MethodPost:
 		usersController.Create(w, r)
 	case http.MethodPut:
-		usersController.Update(w, r)
+		middleware.AuthFunc(w, r, usersController.Update)
 	case http.MethodDelete:
-		usersController.Delete(w, r)
+		middleware.AuthFunc(w, r, usersController.Delete)
 	default:
 		MethodNotAllowed(w, r)
 	}

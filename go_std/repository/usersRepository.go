@@ -2,11 +2,14 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"time"
 
+	"github.com/gustapinto/books_rest/go_std/auth"
 	"github.com/gustapinto/books_rest/go_std/model"
-	"golang.org/x/crypto/bcrypt"
 )
+
+var ErrInvalidAuthentication = errors.New("invalid authentication")
 
 type UsersRepository struct {
 	db *sql.DB
@@ -106,15 +109,6 @@ func (usersRepository *UsersRepository) Delete(userId uint) error {
 	return nil
 }
 
-func (usersRepository *UsersRepository) HashPassword(password string) (string, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return "", err
-	}
-
-	return string(hashedPassword), nil
-}
-
 func (usersRepository *UsersRepository) FindWithoutPassword(userId uint) (model.User, error) {
 	user, err := usersRepository.Find(userId)
 	if err != nil {
@@ -148,7 +142,7 @@ func (usersRepository *UsersRepository) PrepareUser(user *model.User) (model.Use
 	}
 
 	if newUser.Password != "" {
-		hashedPassword, err := usersRepository.HashPassword(newUser.Password)
+		hashedPassword, err := auth.HashPassword(newUser.Password)
 		if err != nil {
 			return model.User{}, err
 		}
@@ -156,4 +150,19 @@ func (usersRepository *UsersRepository) PrepareUser(user *model.User) (model.Use
 	}
 
 	return newUser, nil
+}
+
+func (usersRepository *UsersRepository) ValidateUser(username, password string) (user model.User, err error) {
+	query := `SELECT * FROM "` + usersRepository.Model().Table() + `" WHERE "username" = $1`
+
+	if err := usersRepository.db.QueryRow(query, username).Scan(&user.Id, &user.Name, &user.Username,
+		&user.Password, &user.CreatedAt, &user.UpdatedAt); err != nil {
+		return user, err
+	}
+
+	if matched := auth.ComparePasswords(password, user.Password); !matched {
+		return user, ErrInvalidAuthentication
+	}
+
+	return user, nil
 }
