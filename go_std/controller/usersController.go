@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	singleUserRoutePattern = `\/user\/([0-9]+)`
+	GetUserPattern = `\/user\/([0-9]+)`
 )
 
 type UsersController struct {
@@ -25,7 +25,7 @@ func NewUsersController(usersRepository *repository.UsersRepository) *UsersContr
 func (usersController *UsersController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		if matched, _ := regexp.MatchString(singleUserRoutePattern, r.URL.Path); matched {
+		if matched, _ := regexp.MatchString(GetUserPattern, r.URL.Path); matched {
 			usersController.Get(w, r)
 		} else {
 			usersController.GetAll(w, r)
@@ -42,17 +42,23 @@ func (usersController *UsersController) ServeHTTP(w http.ResponseWriter, r *http
 }
 
 func (usersController *UsersController) Get(w http.ResponseWriter, r *http.Request) {
-	// TODO
+	userId, err := ExtractIdFromUrl(r.URL.Path)
+	if err != nil {
+		BadRequestResponse(w)
+		return
+	}
 
-	// userId, err := ExtractIdFromUrl(r.URL.Path)
-	// if err != nil {
-	// 	BadRequestResponse(w)
-	// 	return
-	// }
+	user, err := usersController.usersRepository.FindWithoutPassword(userId)
+	if err != nil {
+		ServerErrorResponse(w, err)
+		return
+	}
+
+	JsonResponse[model.User](w, user, http.StatusOK)
 }
 
 func (usersController *UsersController) GetAll(w http.ResponseWriter, r *http.Request) {
-	users, err := usersController.usersRepository.GetAll(true)
+	users, err := usersController.usersRepository.AllWithoutPassword()
 	if err != nil {
 		ServerErrorResponse(w, err)
 		return
@@ -84,17 +90,13 @@ func (usersController *UsersController) Update(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	if user.Id == 0 {
-		userId, err := ExtractIdFromUrl(r.URL.Path)
-		if err != nil {
-			BadRequestResponse(w)
-			return
-		}
-
-		user.Id = userId
+	userId, err := ExtractIdFromUrl(r.URL.Path)
+	if err != nil {
+		BadRequestResponse(w)
+		return
 	}
 
-	newUser, err := usersController.usersRepository.Update(&user)
+	newUser, err := usersController.usersRepository.Update(userId, &user)
 	if err != nil {
 		ServerErrorResponse(w, err)
 		return

@@ -11,6 +11,7 @@ import (
 	"github.com/gustapinto/books_rest/go_std/config"
 	"github.com/gustapinto/books_rest/go_std/controller"
 	"github.com/gustapinto/books_rest/go_std/middleware"
+	"github.com/gustapinto/books_rest/go_std/model"
 	"github.com/gustapinto/books_rest/go_std/repository"
 )
 
@@ -21,10 +22,9 @@ func main() {
 	if err != nil {
 		logger.Fatal(err)
 	}
-
 	usersRepository := repository.NewUsersRepository(db)
 
-	if err := repository.AutoMigrate(db, usersRepository); err != nil {
+	if err := model.AutoMigrate(db, new(model.User)); err != nil {
 		logger.Fatal(err)
 	}
 
