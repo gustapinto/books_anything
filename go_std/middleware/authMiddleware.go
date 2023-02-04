@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"errors"
 	"io"
 	"net/http"
@@ -15,7 +16,8 @@ func Auth(next http.Handler) http.Handler {
 }
 
 func AuthFunc(w http.ResponseWriter, r *http.Request, next func(http.ResponseWriter, *http.Request)) {
-	if err := auth.AuthenticateFromHeader(r.Header); err != nil {
+	loggedUser, err := auth.AuthenticateFromHeader(r.Header)
+	if err != nil {
 		if errors.Is(err, auth.ErrMissingAuthorizationHeader) || errors.Is(err, auth.ErrMissingBearerKey) {
 			w.WriteHeader(http.StatusBadRequest)
 			io.WriteString(w, err.Error())
@@ -32,5 +34,7 @@ func AuthFunc(w http.ResponseWriter, r *http.Request, next func(http.ResponseWri
 		return
 	}
 
-	next(w, r)
+	ctx := context.WithValue(r.Context(), "user", loggedUser)
+
+	next(w, r.WithContext(ctx))
 }

@@ -4,9 +4,37 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 )
+
+type RestController interface {
+	Get(http.ResponseWriter, *http.Request)
+	GetAll(http.ResponseWriter, *http.Request)
+	Create(http.ResponseWriter, *http.Request)
+	Update(http.ResponseWriter, *http.Request)
+	Delete(http.ResponseWriter, *http.Request)
+}
+
+func RestRouting(baseUrl string, c RestController, w http.ResponseWriter, r *http.Request) {
+	hasId, _ := regexp.MatchString(`/`+baseUrl+`/([0-9]+)`, r.URL.Path)
+
+	switch r.Method {
+	case http.MethodGet:
+		if hasId {
+			c.Get(w, r)
+		} else {
+			c.GetAll(w, r)
+		}
+	case http.MethodPost:
+		c.Create(w, r)
+	case http.MethodPut:
+		c.Update(w, r)
+	case http.MethodDelete:
+		c.Delete(w, r)
+	}
+}
 
 func MethodNotAllowed(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusBadRequest)
@@ -20,6 +48,11 @@ func BadRequestResponse(w http.ResponseWriter) {
 
 func ServerErrorResponse(w http.ResponseWriter, err error) {
 	w.WriteHeader(http.StatusInternalServerError)
+	io.WriteString(w, err.Error())
+}
+
+func NotFoundResponse(w http.ResponseWriter, err error) {
+	w.WriteHeader(http.StatusNotFound)
 	io.WriteString(w, err.Error())
 }
 

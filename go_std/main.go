@@ -22,16 +22,19 @@ func main() {
 	if err != nil {
 		logger.Fatal(err)
 	}
-	usersRepository := repository.NewUsersRepository(db)
 
-	if err := model.AutoMigrate(db, new(model.User)); err != nil {
+	if err := model.AutoMigrate(db, new(model.User), new(model.Author)); err != nil {
 		logger.Fatal(err)
 	}
 
+	usersRepository := repository.NewUsersRepository(db)
+	authorsRepository := repository.NewAuthorsRepository(db)
+
 	RegisterRoutes(logger, map[string]http.Handler{
-		"/ping": controller.NewPingController(),
-		"/user": controller.NewUsersController(usersRepository),
-		"/auth": controller.NewAuthController(usersRepository),
+		"/ping":   controller.NewPingController(),
+		"/user":   controller.NewUsersController(usersRepository),
+		"/auth":   controller.NewAuthController(usersRepository),
+		"/author": middleware.Auth(controller.NewAuthorsController(authorsRepository)),
 	})
 }
 

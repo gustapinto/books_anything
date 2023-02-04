@@ -56,14 +56,14 @@ func GenerateToken(user model.User) (string, error) {
 	return "Bearer " + token, nil
 }
 
-func AuthenticateFromHeader(header http.Header) error {
+func AuthenticateFromHeader(header http.Header) (model.User, error) {
 	authorization := header.Get("Authorization")
 	if authorization == "" {
-		return ErrMissingAuthorizationHeader
+		return model.User{}, ErrMissingAuthorizationHeader
 	}
 
 	if !strings.Contains(authorization, "Bearer") {
-		return ErrMissingBearerKey
+		return model.User{}, ErrMissingBearerKey
 	}
 
 	authorization = strings.ReplaceAll(authorization, "Bearer ", "")
@@ -72,12 +72,14 @@ func AuthenticateFromHeader(header http.Header) error {
 		return []byte(config.AppSecret), nil
 	})
 	if err != nil {
-		return ErrInvalidToken
+		return model.User{}, ErrInvalidToken
 	}
 
 	if !token.Valid {
-		return ErrInvalidToken
+		return model.User{}, ErrInvalidToken
 	}
 
-	return nil
+	user := token.Claims.(*UserClaims).User
+
+	return user, nil
 }
