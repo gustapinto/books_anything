@@ -20,7 +20,7 @@ func NewAuthorsController(authorsRepository *repository.AuthorsRepository) *Auth
 }
 
 func (c *AuthorsController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	RestRouting("author", c, w, r)
+	CrudRouting("author", c, w, r)
 }
 
 func (c *AuthorsController) Get(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +45,14 @@ func (c *AuthorsController) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *AuthorsController) GetAll(w http.ResponseWriter, r *http.Request) {
-	// TODO
+	loggedUser := r.Context().Value("user").(model.User)
+	authors, err := c.authorsRepository.AllWithCreator(loggedUser.Id)
+	if err != nil {
+		ServerErrorResponse(w, err)
+		return
+	}
+
+	JsonResponse[[]model.Author](w, authors, http.StatusOK)
 }
 
 func (c *AuthorsController) Create(w http.ResponseWriter, r *http.Request) {
@@ -67,9 +74,36 @@ func (c *AuthorsController) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *AuthorsController) Update(w http.ResponseWriter, r *http.Request) {
-	// TODO
+	authorId, err := ExtractIdFromUrl(r.URL.Path)
+	if err != nil {
+		BadRequestResponse(w)
+		return
+	}
+
+	author, err := UnmarshalJsonRequest[model.Author](w, r)
+	if err != nil {
+		BadRequestResponse(w)
+		return
+	}
+
+	newAuthor, err := c.authorsRepository.Update(authorId, &author)
+	if err != nil {
+		ServerErrorResponse(w, err)
+		return
+	}
+
+	JsonResponse[model.Author](w, newAuthor, http.StatusOK)
 }
 
 func (c *AuthorsController) Delete(w http.ResponseWriter, r *http.Request) {
-	// TODO
+	authorId, err := ExtractIdFromUrl(r.URL.Path)
+	if err != nil {
+		BadRequestResponse(w)
+		return
+	}
+
+	if err := c.authorsRepository.Delete(authorId); err != nil {
+		ServerErrorResponse(w, err)
+		return
+	}
 }

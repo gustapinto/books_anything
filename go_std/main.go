@@ -23,22 +23,33 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	if err := model.AutoMigrate(db, new(model.User), new(model.Author)); err != nil {
+	if err := model.AutoMigrate(db, new(model.User), new(model.Author), new(model.Book)); err != nil {
 		logger.Fatal(err)
 	}
 
 	usersRepository := repository.NewUsersRepository(db)
-	authorsRepository := repository.NewAuthorsRepository(db)
+	authorsRepository := repository.NewAuthorsRepository(db, usersRepository)
+	booksRepository := repository.NewBooksRepository(db, authorsRepository, usersRepository)
 
-	RegisterRoutes(logger, map[string]http.Handler{
-		"/ping":   controller.NewPingController(),
-		"/user":   controller.NewUsersController(usersRepository),
-		"/auth":   controller.NewAuthController(usersRepository),
-		"/author": middleware.Auth(controller.NewAuthorsController(authorsRepository)),
+	pingController := controller.NewPingController()
+	usersController := controller.NewUsersController(usersRepository)
+	authController := controller.NewAuthController(usersRepository)
+	authorsController := controller.NewAuthorsController(authorsRepository)
+	booksController := controller.NewBooksController(booksRepository)
+
+	err = RegisterRoutes(logger, map[string]http.Handler{
+		"/ping":   pingController,
+		"/user":   usersController,
+		"/auth":   authController,
+		"/author": middleware.Auth(authorsController),
+		"/book":   middleware.Auth(booksController),
 	})
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
-func RegisterRoutes(logger *log.Logger, routeMapping map[string]http.Handler) {
+func RegisterRoutes(logger *log.Logger, routeMapping map[string]http.Handler) error {
 	for route, handler := range routeMapping {
 		http.Handle(route, middleware.Logging(logger, handler))
 
@@ -48,6 +59,8 @@ func RegisterRoutes(logger *log.Logger, routeMapping map[string]http.Handler) {
 	}
 
 	if err := http.ListenAndServe(config.AppAddr, nil); err != nil {
-		logger.Fatal(err)
+		return err
 	}
+
+	return nil
 }

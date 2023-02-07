@@ -17,7 +17,7 @@ type RestController interface {
 	Delete(http.ResponseWriter, *http.Request)
 }
 
-func RestRouting(baseUrl string, c RestController, w http.ResponseWriter, r *http.Request) {
+func CrudRouting(baseUrl string, c RestController, w http.ResponseWriter, r *http.Request) {
 	hasId, _ := regexp.MatchString(`/`+baseUrl+`/([0-9]+)`, r.URL.Path)
 
 	switch r.Method {
