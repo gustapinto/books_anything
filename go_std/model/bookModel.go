@@ -7,7 +7,7 @@ type Book struct {
 	ISBN    string `json:"isbn"`
 	Name    string `json:"name"`
 	Author  Author `json:"author"`
-	Creator User   `json:"user"`
+	Creator User   `json:"creator"`
 }
 
 func (book *Book) Table() string {
@@ -28,4 +28,27 @@ func (book *Book) Migrate() string {
 	`
 
 	return fmt.Sprintf(query, book.Table(), new(Author).Table(), new(User).Table())
+}
+
+func (book *Book) Dest() []any {
+	return []any{
+		&book.Id,
+		&book.ISBN,
+		&book.Name,
+		&book.Author.Id,
+		&book.Creator.Id,
+		&book.CreatedAt,
+		&book.UpdatedAt,
+	}
+}
+
+func (book *Book) Fillable() []any {
+	return []any{
+		book.ISBN,
+		book.Name,
+		book.Author.Id,
+		book.Creator.Id,
+		book.CreatedAt,
+		book.UpdatedAt,
+	}
 }
