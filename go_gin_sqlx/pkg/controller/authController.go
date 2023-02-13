@@ -28,6 +28,7 @@ func NewAuthController(userRepository *repository.UserRepository) *AuthControlle
 // @Failure 400 {object} ErrorResponse
 // @Failure 401
 // @Failure 500 {object} ErrorResponse
+// @Param credentials body LoginRequest true "The user credentials"
 // @Router	/auth [post]
 func (ac *AuthController) Login(c *gin.Context) {
 	var credentials LoginRequest

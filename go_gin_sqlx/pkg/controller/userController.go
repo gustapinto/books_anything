@@ -9,6 +9,12 @@ import (
 	"github.com/gustapinto/books_rest/go_gin_sqlx/pkg/repository"
 )
 
+type UserPayload struct {
+	Name     string `json:"name"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 type UserController struct {
 	userRepository *repository.UserRepository
 }
@@ -27,7 +33,7 @@ func NewUserController(userRepository *repository.UserRepository) *UserControlle
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Security Bearer
-// @Param id path uint true "User ID"
+// @Param id path uint true "The user id"
 // @Router	/user/{id} [get]
 func (uc *UserController) Find(c *gin.Context) {
 	userId, err := strconv.Atoi(c.Param("userId"))
@@ -72,6 +78,7 @@ func (uc *UserController) All(c *gin.Context) {
 // @Success	201	{object} model.User
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
+// @Param user body UserPayload true "The user to be created"
 // @Router	/user [post]
 func (uc *UserController) Create(c *gin.Context) {
 	var user model.User
@@ -89,7 +96,7 @@ func (uc *UserController) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, newUser)
 }
 
-// @Summary	Create user
+// @Summary	Update user
 // @Tags Users
 // @Description	Update a user entry
 // @Accept json
@@ -98,7 +105,8 @@ func (uc *UserController) Create(c *gin.Context) {
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Security Bearer
-// @Param id path uint true "User ID"
+// @Param id path uint true "The user id"
+// @Param user body UserPayload true "The user to be updated"
 // @Router	/user/{id} [put]
 func (uc *UserController) Update(c *gin.Context) {
 	userId, err := strconv.Atoi(c.Param("userId"))
@@ -130,7 +138,7 @@ func (uc *UserController) Update(c *gin.Context) {
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Security Bearer
-// @Param id path uint true "User ID"
+// @Param id path uint true "The user id"
 // @Router	/user/{id} [delete]
 func (uc *UserController) Delete(c *gin.Context) {
 	userId, err := strconv.Atoi(c.Param("userId"))

@@ -1,6 +1,8 @@
 
 .PHONY: swag build run start migration migrate rollback
 
+default:
+
 # Application
 
 swag:
@@ -27,3 +29,7 @@ migrate:
 
 rollback:
 	migrate -database ${migrateUrl} -path ${migrateDir} down
+
+# Integration
+
+deploy: migrate start
