@@ -1,0 +1,21 @@
+{
+    "name": "Go",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "golang",
+    "workspaceFolder": "/books_rest_app",
+    "runServices": [
+        "golang",
+        "postgres"
+    ],
+    "forwardPorts": [
+        3000,
+        5432
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "golang.Go"
+            ]
+        }
+    }
+}
