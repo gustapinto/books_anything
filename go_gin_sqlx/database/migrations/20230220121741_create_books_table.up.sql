@@ -1,0 +1,13 @@
+BEGIN;
+
+CREATE TABLE IF NOT EXISTS books (
+    id SERIAL PRIMARY KEY,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    isbn CHAR(13) UNIQUE NOT NULL,
+    name VARCHAR(255) UNIQUE NOT NULL,
+    author_id INTEGER REFERENCES authors (id) NOT NULL,
+    created_by INTEGER REFERENCES users (id) NOT NULL
+);
+
+END;

@@ -34,10 +34,12 @@ func main() {
 
 	userRepository := repository.NewUserRepository(db)
 	authorRepository := repository.NewAuthorRepository(db)
+	bookRepository := repository.NewBookRepository(db)
 	pingController := controller.NewPingController()
 	userController := controller.NewUserController(userRepository)
 	authController := controller.NewAuthController(userRepository)
 	authorController := controller.NewAuthorController(authorRepository)
+	bookController := controller.NewBookController(bookRepository)
 
 	router := gin.Default()
 	api := router.Group("/api")
@@ -61,6 +63,14 @@ func main() {
 			author.POST("", authorController.Create)
 			author.PUT(":authorId", authorController.Update)
 			author.DELETE(":authorId", authorController.Delete)
+		}
+		book := api.Group("/book").Use(middleware.Auth)
+		{
+			book.GET("", bookController.All)
+			book.GET(":bookId", bookController.Find)
+			book.POST("", bookController.Create)
+			book.PUT(":bookId", bookController.Update)
+			book.DELETE(":bookId", bookController.Delete)
 		}
 	}
 

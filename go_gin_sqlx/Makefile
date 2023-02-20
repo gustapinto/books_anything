@@ -6,7 +6,7 @@ default:
 # Application
 
 swag:
-	swag init -g main.go -dir cmd,pkg/controller,pkg/model
+	swag init -g main.go -dir cmd,pkg/controller,pkg/model,pkg/schema
 
 build:
 	go build -o ./bin/main.o cmd/main.go
