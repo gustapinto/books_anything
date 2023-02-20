@@ -17,7 +17,7 @@ func Auth(c *gin.Context) {
 		}
 
 		if errors.Is(err, auth.ErrInvalidToken) {
-			c.Status(http.StatusUnauthorized)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			return
 		}
 

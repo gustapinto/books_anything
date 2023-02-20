@@ -33,9 +33,11 @@ func main() {
 	defer db.Close()
 
 	userRepository := repository.NewUserRepository(db)
+	authorRepository := repository.NewAuthorRepository(db)
 	pingController := controller.NewPingController()
 	userController := controller.NewUserController(userRepository)
 	authController := controller.NewAuthController(userRepository)
+	authorController := controller.NewAuthorController(authorRepository)
 
 	router := gin.Default()
 	api := router.Group("/api")
@@ -44,13 +46,21 @@ func main() {
 		api.GET("/ping", pingController.Pong)
 		api.GET("/swagger/*any", swaggoGin.WrapHandler(swaggoFiles.Handler))
 
-		user := api.Group("/user")
+		user := api.Group("/user").Use(middleware.Auth)
 		{
-			user.GET("", userController.All).Use(middleware.Auth)
-			user.GET(":userId", userController.Find).Use(middleware.Auth)
+			user.GET("", userController.All)
+			user.GET(":userId", userController.Find)
 			user.POST("", userController.Create)
-			user.PUT(":userId", userController.Update).Use(middleware.Auth)
-			user.DELETE(":userId", userController.Delete).Use(middleware.Auth)
+			user.PUT(":userId", userController.Update)
+			user.DELETE(":userId", userController.Delete)
+		}
+		author := api.Group("/author").Use(middleware.Auth)
+		{
+			author.GET("", authorController.All)
+			author.GET(":authorId", authorController.Find)
+			author.POST("", authorController.Create)
+			author.PUT(":authorId", authorController.Update)
+			author.DELETE(":authorId", authorController.Delete)
 		}
 	}
 
