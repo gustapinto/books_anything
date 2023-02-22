@@ -26,3 +26,4 @@ db/
 .idea
 docs/
 bin/
+.task/

@@ -1,5 +1,5 @@
 BEGIN;
 
-DROP TABLE book;
+DROP TABLE books;
 
 END;
