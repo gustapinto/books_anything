@@ -6,7 +6,7 @@ ENV PATH="$PATH:~/.local/bin"
 
 RUN apk add curl
 
-RUN sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/usr/bin
+RUN sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/.local/bin
 
 RUN go install -tags 'pgx' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 
