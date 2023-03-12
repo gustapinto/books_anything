@@ -8,7 +8,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/gustapinto/books_rest/go_gin_sqlx/internal/config"
-	"github.com/gustapinto/books_rest/go_gin_sqlx/pkg/model"
+	"github.com/gustapinto/books_rest/go_gin_sqlx/internal/model"
 	"golang.org/x/crypto/bcrypt"
 )
 

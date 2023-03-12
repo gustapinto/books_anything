@@ -4,23 +4,23 @@ dotenv:
   - .env
 
 vars:
-  MIGRATIONS_DIR: database/migrations
+  MIGRATIONS_DIR: migrations
   MIGRATIONS_URL: 'pgx://{{.DB_USER}}:{{.DB_PASSWORD}}@{{.DB_HOST}}:{{.DB_PORT}}/{{.DB_NAME}}'
 
 tasks:
   # Application
   swag:
     cmds:
-      - swag init -g main.go -dir cmd,pkg/controller,pkg/model,pkg/schema
+      - swag init -g main.go -dir cmd,internal/transport/rest/handler,internal/model,internal/schema -o api
     sources:
       - cmd/**/*.go
-      - pkg/controller/**/*.go
-      - pkg/model/**/*.go
-      - pkg/schema/**/*.go
+      - internal/transport/rest/handler/**/*.go
+      - internal/model/**/*.go
+      - internal/schema/**/*.go
     generates:
-      - docs/docs.go
-      - docs/swagger.json
-      - docs/swagger.yaml
+      - api/docs.go
+      - api/swagger.json
+      - api/swagger.yaml
 
   build:
     cmds:

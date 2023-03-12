@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/gustapinto/books_rest/go_gin_sqlx/pkg/auth"
-	"github.com/gustapinto/books_rest/go_gin_sqlx/pkg/model"
+	"github.com/gustapinto/books_rest/go_gin_sqlx/internal/auth"
+	"github.com/gustapinto/books_rest/go_gin_sqlx/internal/model"
 	"github.com/jmoiron/sqlx"
 )
 

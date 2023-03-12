@@ -1,12 +1,12 @@
-package controller
+package handler
 
 import (
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gustapinto/books_rest/go_gin_sqlx/pkg/model"
-	"github.com/gustapinto/books_rest/go_gin_sqlx/pkg/repository"
+	"github.com/gustapinto/books_rest/go_gin_sqlx/internal/database/repository"
+	"github.com/gustapinto/books_rest/go_gin_sqlx/internal/model"
 )
 
 type BookCrudRepository interface {

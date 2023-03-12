@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gustapinto/books_rest/go_gin_sqlx/pkg/auth"
+	"github.com/gustapinto/books_rest/go_gin_sqlx/internal/auth"
 )
 
 func Auth(c *gin.Context) {

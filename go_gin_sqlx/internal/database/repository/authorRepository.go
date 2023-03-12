@@ -3,7 +3,7 @@ package repository
 import (
 	"time"
 
-	"github.com/gustapinto/books_rest/go_gin_sqlx/pkg/model"
+	"github.com/gustapinto/books_rest/go_gin_sqlx/internal/model"
 	"github.com/jmoiron/sqlx"
 )
 
