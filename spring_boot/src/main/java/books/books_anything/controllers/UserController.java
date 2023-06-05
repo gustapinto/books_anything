@@ -19,7 +19,7 @@ import books.books_anything.repositories.UserRepository;
 @RequestMapping("/api/users")
 public class UserController {
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @GetMapping(value = "/{id}")
     public UserModel find(@PathVariable("id") Long id) {
