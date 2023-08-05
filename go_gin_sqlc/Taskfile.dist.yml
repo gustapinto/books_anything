@@ -1,0 +1,35 @@
+version: '3'
+
+dotenv:
+  - .env
+
+tasks:
+  swag:
+    cmds:
+      - swag init -g main.go -dir cmd,internal/transport/rest/handler,internal/model -o api
+    sources:
+      - cmd/**/*.go
+      - internal/transport/rest/handler/**/*.go
+      - internal/model/**/*.go
+      - internal/schema/**/*.go
+    generates:
+      - api/docs.go
+      - api/swagger.json
+      - api/swagger.yaml
+
+  build:
+    cmds:
+      - go build -o ./bin/main.o cmd/main.go
+    sources:
+      - cmd/**/*.go
+      - internal/**/*.go
+      - pkg/**/*.go
+    generates:
+      - bin/main.o
+
+  run:
+    deps:
+      - swag
+      - build
+    cmds:
+      - ./bin/main.o

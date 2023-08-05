@@ -1,0 +1,42 @@
+version: "3"
+
+services:
+  golang:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    tty: true
+    mem_limit: 2g
+    ports:
+      - 3000:3000
+    volumes:
+      - ./:/books_rest_app:Z
+    env_file:
+      - .env
+    networks:
+      - backend
+    depends_on:
+      - cassandra
+
+  cassandra:
+    image: cassandra:4.1.2
+    hostname: cassandra
+    mem_limit: 2g
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces" ]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+    volumes:
+      - ./cassandra/cql:/tmp/cql:Z
+      - ./cassandra/db1:/var/lib/cassandra:Z
+    env_file:
+      - .env
+    ports:
+      - 9042:9042
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge

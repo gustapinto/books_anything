@@ -1,0 +1,13 @@
+version: 2
+
+sql:
+  - engine: postgresql
+    queries: sqlc/queries/
+    schema: migrations
+    gen:
+      go:
+        package: out
+        out: sqlc/out/
+        emit_json_tags: true
+        emit_db_tags: true
+        emit_interface: true
