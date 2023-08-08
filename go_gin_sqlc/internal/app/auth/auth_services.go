@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/gustapinto/books_rest/go_gin_sqlc_ddd/internal/config"
-	"github.com/gustapinto/books_rest/go_gin_sqlc_ddd/internal/model"
+	"github.com/gustapinto/books_rest/go_gin_sqlc_ddd/internal/domain/user"
+	"github.com/gustapinto/books_rest/go_gin_sqlc_ddd/internal/infrastructure/config"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -16,10 +16,11 @@ var (
 	ErrMissingAuthorizationHeader = errors.New(`missing Authorization header`)
 	ErrMissingBearerKey           = errors.New(`missing Bearer prefix on token`)
 	ErrInvalidToken               = errors.New("invalid token")
+	ErrInvalidAuthentication      = errors.New("invalid authentication")
 )
 
 type UserClaims struct {
-	User model.User
+	User user.User
 	jwt.RegisteredClaims
 }
 
@@ -40,7 +41,7 @@ func ComparePasswords(password, hashedPassword string) bool {
 	return true
 }
 
-func GenerateToken(user model.User) (string, error) {
+func GenerateToken(user user.User) (string, error) {
 	claims := &UserClaims{
 		User: user,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -56,14 +57,14 @@ func GenerateToken(user model.User) (string, error) {
 	return "Bearer " + token, nil
 }
 
-func AuthenticateFromHeader(header http.Header) (model.User, error) {
+func AuthenticateFromHeader(header http.Header) (*user.User, error) {
 	authorization := header.Get("Authorization")
 	if authorization == "" {
-		return model.User{}, ErrMissingAuthorizationHeader
+		return nil, ErrMissingAuthorizationHeader
 	}
 
 	if !strings.Contains(authorization, "Bearer") {
-		return model.User{}, ErrMissingBearerKey
+		return nil, ErrMissingBearerKey
 	}
 
 	authorization = strings.ReplaceAll(authorization, "Bearer ", "")
@@ -72,14 +73,14 @@ func AuthenticateFromHeader(header http.Header) (model.User, error) {
 		return []byte(config.APP_SECRET), nil
 	})
 	if err != nil {
-		return model.User{}, ErrInvalidToken
+		return nil, ErrInvalidToken
 	}
 
 	if !token.Valid {
-		return model.User{}, ErrInvalidToken
+		return nil, ErrInvalidToken
 	}
 
 	user := token.Claims.(*UserClaims).User
 
-	return user, nil
+	return &user, nil
 }

@@ -1,3 +1,5 @@
+
+-- +migrate Up
 CREATE TABLE IF NOT EXISTS authors (
     id UUID PRIMARY KEY,
     created_at TIMESTAMP NOT NULL,
@@ -5,3 +7,6 @@ CREATE TABLE IF NOT EXISTS authors (
     name VARCHAR(255) NOT NULL,
     user_id UUID REFERENCES users (id) NOT NULL
 );
+
+-- +migrate Down
+DROP TABLE IF EXISTS authors;

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"os/user"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,6 +19,6 @@ type Book struct {
 	UpdatedAt time.Time `json:"updated_at"`
 	ISBN      string    `json:"isbn"`
 	Name      string    `json:"name"`
-	User      User      `json:"user"`
+	User      user.User `json:"user"`
 	Author    Author    `json:"author"`
 }

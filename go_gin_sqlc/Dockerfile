@@ -8,4 +8,4 @@ RUN sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/bin
 
 RUN go install github.com/swaggo/swag/cmd/swag@latest
 
-RUN go install github.com/kyleconroy/sqlc/cmd/sqlc@latest
+RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest

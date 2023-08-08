@@ -9,20 +9,6 @@ import (
 
 var ErrInvalidAuthentication = errors.New("invalid authentication")
 
-type UserRepository interface {
-	Create(model.UserInputModel) (*model.User, error)
-
-	Update(uuid.UUID, model.UserInputModel) (*model.User, error)
-
-	Find(uuid.UUID) (*model.User, error)
-
-	All(uint) ([]model.User, error)
-
-	Delete(uuid.UUID) error
-
-	Login(string, string) (*model.User, error)
-}
-
 type AuthorRepository interface {
 	Create(model.AuthorInputModel) (*model.Author, error)
 

@@ -6,12 +6,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type UserInputModel struct {
-	Name     string `json:"name"`
-	Username string `json:"username"`
-	Password string `json:"password,omitempty"`
-}
-
 type User struct {
 	Id        uuid.UUID `json:"id"`
 	CreatedAt time.Time `json:"created_at"`

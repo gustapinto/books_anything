@@ -1,0 +1,6 @@
+# Only used to generate and run down migrations on dev
+development:
+  dialect: postgres
+  datasource: host=${DB_HOST} dbname=${DB_NAME} user=${DB_USER} password=${DB_PASSWORD} port=${DB_PORT} sslmode=disable
+  dir: migrations
+  table: migrations

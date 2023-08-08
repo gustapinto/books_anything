@@ -1,14 +1,16 @@
-package handler
+package auth
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gustapinto/books_rest/go_gin_sqlc_ddd/internal/auth"
+	"github.com/gustapinto/books_rest/go_gin_sqlc_ddd/internal/domain/user"
 )
 
 type AuthController struct {
-	UserService *user.UserService
+	UserRepository user.UserRepository
 }
 
 // @Summary	Auth
@@ -26,26 +28,26 @@ func (ac *AuthController) Login(c *gin.Context) {
 	var credentials LoginRequest
 
 	if err := c.BindJSON(&credentials); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, NewErrorResponse(err))
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
 
-	user, err := ac.UserService.Login(credentials.Username, credentials.Password)
+	user, err := ac.UserRepository.Login(credentials.Username, credentials.Password)
 	if err != nil {
-		// if errors.Is(err, repository.ErrInvalidAuthentication) {
-		// c.Status(http.StatusUnauthorized)
-		// return
-		// }
+		if errors.Is(err, ErrInvalidAuthentication) {
+			c.Status(http.StatusUnauthorized)
+			return
+		}
 
-		c.AbortWithStatusJSON(http.StatusInternalServerError, NewErrorResponse(err))
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
 
 	token, err := auth.GenerateToken(*user)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, NewErrorResponse(err))
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
 
-	c.JSON(http.StatusOK, NewTokenResponse(token))
+	c.JSON(http.StatusOK, gin.H{"token": token})
 }

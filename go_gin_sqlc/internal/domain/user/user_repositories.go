@@ -4,10 +4,23 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/gustapinto/books_rest/go_gin_sqlc_ddd/internal/adapter"
 	"github.com/gustapinto/books_rest/go_gin_sqlc_ddd/internal/auth"
 	"github.com/gustapinto/books_rest/go_gin_sqlc_ddd/sqlc/out"
 )
+
+type UserRepository interface {
+	Create(user UserInputModel) (*User, error)
+
+	Update(uuid.UUID, UserInputModel) (*User, error)
+
+	Find(uuid.UUID) (*User, error)
+
+	All(uint) (*UserPagination, error)
+
+	Delete(uuid.UUID) error
+
+	Login(string, string) (*User, error)
+}
 
 type UserSqlcRepository struct {
 	Queries out.Querier
@@ -28,7 +41,7 @@ func (acr *UserSqlcRepository) Create(inUser UserInputModel) (*User, error) {
 		return nil, err
 	}
 
-	return adapter.UserFromSqlcCreateUserRow(&outUser), nil
+	return UserFromSqlcCreateUserRow(&outUser), nil
 }
 
 func (acr *UserSqlcRepository) Update(userId uuid.UUID, inUser UserInputModel) (*User, error) {
@@ -46,7 +59,7 @@ func (acr *UserSqlcRepository) Update(userId uuid.UUID, inUser UserInputModel) (
 		return nil, err
 	}
 
-	return adapter.UserFromSqlcUpdateUserRow(&outUser), nil
+	return UserFromSqlcUpdateUserRow(&outUser), nil
 }
 
 func (acr *UserSqlcRepository) All(page uint) (*UserPagination, error) {
@@ -67,7 +80,7 @@ func (acr *UserSqlcRepository) All(page uint) (*UserPagination, error) {
 	users := make([]User, len(outUsers))
 
 	for _, outUser := range outUsers {
-		users = append(users, *adapter.UserFromSqlcUser(&outUser, true))
+		users = append(users, *UserFromSqlcUser(&outUser, true))
 	}
 
 	nextPage := page + 1
@@ -93,7 +106,7 @@ func (acr *UserSqlcRepository) Find(userId uuid.UUID) (*User, error) {
 		return nil, err
 	}
 
-	return adapter.UserFromSqlcUser(&outUser, true), nil
+	return UserFromSqlcUser(&outUser, true), nil
 }
 
 func (acr *UserSqlcRepository) Delete(userId uuid.UUID) error {
@@ -107,8 +120,8 @@ func (acr *UserSqlcRepository) Login(username, password string) (*User, error) {
 	}
 
 	if matched := auth.ComparePasswords(password, outUser.Password); !matched {
-		return nil, ErrInvalidAuthentication
+		return nil, auth.ErrInvalidAuthentication
 	}
 
-	return adapter.UserFromSqlcUser(&outUser, true), nil
+	return UserFromSqlcUser(&outUser, true), nil
 }

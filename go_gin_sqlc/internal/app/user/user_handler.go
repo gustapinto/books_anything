@@ -5,10 +5,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/gustapinto/books_rest/go_gin_sqlc_ddd/internal/domain/user"
 )
 
-type UserController struct {
-	UserService *UserService
+type UserHandler struct {
+	UserRepository user.UserRepository
 }
 
 // @Summary Get user
@@ -21,14 +22,14 @@ type UserController struct {
 // @Security Bearer
 // @Param id path uint true "The user id"
 // @Router	/user/{id} [get]
-func (uc *UserController) Find(c *gin.Context) {
+func (uc *UserHandler) Find(c *gin.Context) {
 	userId, err := uuid.FromBytes([]byte(c.Param("userId")))
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
 
-	user, err := uc.UserService.Find(userId)
+	user, err := uc.UserRepository.Find(userId)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
@@ -46,8 +47,8 @@ func (uc *UserController) Find(c *gin.Context) {
 // @Failure 500 {object} ErrorResponse
 // @Security Bearer
 // @Router	/user [get]
-func (uc *UserController) All(c *gin.Context) {
-	users, err := uc.UserService.All(1)
+func (uc *UserHandler) All(c *gin.Context) {
+	users, err := uc.UserRepository.All(1)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
@@ -66,14 +67,14 @@ func (uc *UserController) All(c *gin.Context) {
 // @Failure 500 {object} ErrorResponse
 // @Param user body UserInputModel true "The user to be created"
 // @Router	/user [post]
-func (uc *UserController) Create(c *gin.Context) {
-	var user UserInputModel
+func (uc *UserHandler) Create(c *gin.Context) {
+	var user user.UserInputModel
 	if err := c.BindJSON(&user); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
 
-	if _, err := uc.UserService.Create(user); err != nil {
+	if _, err := uc.UserRepository.Create(user); err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
@@ -93,20 +94,20 @@ func (uc *UserController) Create(c *gin.Context) {
 // @Param id path uint true "The user id"
 // @Param user body UserInputModel true "The user to be updated"
 // @Router	/user/{id} [put]
-func (uc *UserController) Update(c *gin.Context) {
+func (uc *UserHandler) Update(c *gin.Context) {
 	userId, err := uuid.FromBytes([]byte(c.Param("userId")))
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
 
-	var user UserInputModel
+	var user user.UserInputModel
 	if err := c.BindJSON(&user); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
 
-	if _, err := uc.UserService.Update(userId, user); err != nil {
+	if _, err := uc.UserRepository.Update(userId, user); err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
@@ -124,14 +125,14 @@ func (uc *UserController) Update(c *gin.Context) {
 // @Security Bearer
 // @Param id path uint true "The user id"
 // @Router	/user/{id} [delete]
-func (uc *UserController) Delete(c *gin.Context) {
+func (uc *UserHandler) Delete(c *gin.Context) {
 	userId, err := uuid.FromBytes([]byte(c.Param("userId")))
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
 
-	if err := uc.UserService.Delete(userId); err != nil {
+	if err := uc.UserRepository.Delete(userId); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
