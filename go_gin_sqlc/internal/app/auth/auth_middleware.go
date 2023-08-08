@@ -5,18 +5,18 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gustapinto/books_rest/go_gin_sqlc_ddd/internal/auth"
+	"github.com/gustapinto/books_rest/go_gin_sqlc_ddd/internal/infrastructure/auth"
 )
 
 func AuthMiddleware(c *gin.Context) {
 	loggedUser, err := auth.AuthenticateFromHeader(c.Request.Header)
 	if err != nil {
-		if errors.Is(err, ErrMissingAuthorizationHeader) || errors.Is(err, auth.ErrMissingBearerKey) {
+		if errors.Is(err, auth.ErrMissingAuthorizationHeader) || errors.Is(err, auth.ErrMissingBearerKey) {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		if errors.Is(err, ErrInvalidToken) {
+		if errors.Is(err, auth.ErrInvalidToken) {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			return
 		}

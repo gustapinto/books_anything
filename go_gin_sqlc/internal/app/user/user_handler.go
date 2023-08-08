@@ -68,13 +68,17 @@ func (uc *UserHandler) All(c *gin.Context) {
 // @Param user body UserInputModel true "The user to be created"
 // @Router	/user [post]
 func (uc *UserHandler) Create(c *gin.Context) {
-	var user user.UserInputModel
-	if err := c.BindJSON(&user); err != nil {
+	var _user UserInputModel
+	if err := c.BindJSON(&_user); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
 
-	if _, err := uc.UserRepository.Create(user); err != nil {
+	if _, err := uc.UserRepository.Create(user.User{
+		Name:     _user.Name,
+		Username: _user.Username,
+		Password: _user.Password,
+	}); err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
@@ -101,13 +105,17 @@ func (uc *UserHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var user user.UserInputModel
-	if err := c.BindJSON(&user); err != nil {
+	var _user UserInputModel
+	if err := c.BindJSON(&_user); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
 
-	if _, err := uc.UserRepository.Update(userId, user); err != nil {
+	if _, err := uc.UserRepository.Update(userId, user.User{
+		Name:     _user.Name,
+		Username: _user.Username,
+		Password: _user.Password,
+	}); err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}

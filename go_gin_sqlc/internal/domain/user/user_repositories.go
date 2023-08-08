@@ -4,14 +4,14 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/gustapinto/books_rest/go_gin_sqlc_ddd/internal/auth"
 	"github.com/gustapinto/books_rest/go_gin_sqlc_ddd/sqlc/out"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserRepository interface {
-	Create(user UserInputModel) (*User, error)
+	Create(user User) (*User, error)
 
-	Update(uuid.UUID, UserInputModel) (*User, error)
+	Update(uuid.UUID, User) (*User, error)
 
 	Find(uuid.UUID) (*User, error)
 
@@ -19,15 +19,24 @@ type UserRepository interface {
 
 	Delete(uuid.UUID) error
 
-	Login(string, string) (*User, error)
+	FindByUsernameAndPassword(string, string) (*User, error)
 }
 
 type UserSqlcRepository struct {
 	Queries out.Querier
 }
 
-func (acr *UserSqlcRepository) Create(inUser UserInputModel) (*User, error) {
-	hashedPassword, err := auth.HashPassword(inUser.Password)
+func (acr *UserSqlcRepository) HashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+
+	return string(hashedPassword), nil
+}
+
+func (acr *UserSqlcRepository) Create(inUser User) (*User, error) {
+	hashedPassword, err := acr.HashPassword(inUser.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -44,8 +53,8 @@ func (acr *UserSqlcRepository) Create(inUser UserInputModel) (*User, error) {
 	return UserFromSqlcCreateUserRow(&outUser), nil
 }
 
-func (acr *UserSqlcRepository) Update(userId uuid.UUID, inUser UserInputModel) (*User, error) {
-	hashedPassword, err := auth.HashPassword(inUser.Password)
+func (acr *UserSqlcRepository) Update(userId uuid.UUID, inUser User) (*User, error) {
+	hashedPassword, err := acr.HashPassword(inUser.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -113,14 +122,10 @@ func (acr *UserSqlcRepository) Delete(userId uuid.UUID) error {
 	return acr.Queries.DeleteUser(context.Background(), userId)
 }
 
-func (acr *UserSqlcRepository) Login(username, password string) (*User, error) {
+func (acr *UserSqlcRepository) FindByUsernameAndPassword(username, password string) (*User, error) {
 	outUser, err := acr.Queries.FindUserByUsername(context.Background(), username)
 	if err != nil {
 		return nil, err
-	}
-
-	if matched := auth.ComparePasswords(password, outUser.Password); !matched {
-		return nil, auth.ErrInvalidAuthentication
 	}
 
 	return UserFromSqlcUser(&outUser, true), nil

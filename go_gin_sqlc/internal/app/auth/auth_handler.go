@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gustapinto/books_rest/go_gin_sqlc_ddd/internal/auth"
 	"github.com/gustapinto/books_rest/go_gin_sqlc_ddd/internal/domain/user"
+	"github.com/gustapinto/books_rest/go_gin_sqlc_ddd/internal/infrastructure/auth"
 )
 
 type AuthController struct {
@@ -32,9 +32,9 @@ func (ac *AuthController) Login(c *gin.Context) {
 		return
 	}
 
-	user, err := ac.UserRepository.Login(credentials.Username, credentials.Password)
+	user, err := ac.UserRepository.FindByUsernameAndPassword(credentials.Username, credentials.Password)
 	if err != nil {
-		if errors.Is(err, ErrInvalidAuthentication) {
+		if errors.Is(err, auth.ErrInvalidAuthentication) {
 			c.Status(http.StatusUnauthorized)
 			return
 		}
